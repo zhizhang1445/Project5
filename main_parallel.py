@@ -1,9 +1,9 @@
 import numpy as np
 import scipy
-import os
+import scipy.sparse as sparse
 import matplotlib.pyplot as plt
 import imageio
-import anndata as ad
+from joblib import delayed, parallel_backend
 
 #This is the main file to run scripts, please only put finished 
 #code here so we don't create merge conflicts
@@ -20,13 +20,6 @@ def main(params):
     space = np.zeros((width, length, height), dtype=int) #actual simulation space
     max_height = np.zeros((width, length), dtype=int) #occupation/height at each site
     propensities = np.ones((width, length), dtype = float)
-
-    adata = ad.AnnData()
-
-    for key, value in params.items():
-        setattr(adata, key, value)
-
-    adata.write("./SimResults/result.h5ad")
 
     while(t<params["t_max"]):
         try:
@@ -59,11 +52,12 @@ def main(params):
                 n_updates += 1
             n_ptcls += 1
 
-        except KeyboardInterrupt or IndexError:
+        except KeyboardInterrupt:
             print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_updates: {n_updates}")
             break
     else:
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_updates: {n_updates}")
+        print("We know this happens.")
 
     frames = []
     n_updates = 0
@@ -71,11 +65,12 @@ def main(params):
 
     while(True):
         try:
+            print("Does This Happen???")
             image = imageio.v2.imread(f'./{foldername}/frame_{n_updates}.png')
-            os.remove(f'./{foldername}/frame_{n_updates}.png')
             frames.append(image)
             n_updates += 1
-        except FileNotFoundError: 
+        except FileNotFoundError:
+            print("FileNotFoundError")
             break
 
     imageio.mimsave(f'./Animation_r_{params["r"]}.gif', 
@@ -88,7 +83,7 @@ if __name__ == "__main__":
         "y_dom":              1,
         "num_particles":   2000,
         "t_max":            100,
-        "r":               0.75,
+        "r":                0.8,
         "dt_update_time":     1,          
         "n_ptcl_update": np.inf,          
     }

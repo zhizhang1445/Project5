@@ -36,8 +36,14 @@ def get_nearest_neighbors(matrix, index, self = False):
         new_col = col + offset[1]
 
         # Check if the new index is within the matrix bounds
-        if 0 <= new_row < rows and 0 <= new_col < cols:
-            neighbor_indexes.append((new_row, new_col))
+        if 0 <= new_row < rows:
+            new_row
+        else: new_row = -1
+        if 0 <= new_col < cols:
+            new_col
+        else: new_col = -1
+            
+        neighbor_indexes.append((new_row, new_col))
 
     return neighbor_indexes
 
@@ -82,7 +88,7 @@ def plot_surface(surface, show = True, title = "Ballistic Deposition",
     if save:
         if len(name) == 0:
            raise ValueError("No Name for surface plot")
-        else: plt.savefig("./Zhi/folder4video/"+name)
+        else: plt.savefig("./SimResults/"+name)
         plt.close()
     # plt.show()
     if show:
