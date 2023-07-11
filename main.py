@@ -78,7 +78,7 @@ def main(params):
         except FileNotFoundError: 
             break
 
-    imageio.mimsave(f'./Animation_r_{params["r"]}.gif', 
+    imageio.mimsave(f'./{foldername}/Animation_r_{params["r"]}.gif', 
                     frames, fps = 30)
 
 if __name__ == "__main__":
