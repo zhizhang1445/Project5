@@ -109,7 +109,7 @@ if __name__ == "__main__":
     "filename":        "result2",
     }
 
-    space_time, _ = main(params)
+    space_time = main(params)
     space_time = [space.flatten() for space in space_time if isinstance(space, np.ndarray) ]
     adata = ad.AnnData(np.array(space_time).squeeze())
 

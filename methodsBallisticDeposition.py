@@ -47,9 +47,9 @@ def get_nearest_neighbors(matrix, index, self = False):
 
     return neighbor_indexes
 
-def update_propensities(propensities, index, params):
+def update_propensities(propensities, index, params, dt = 1):
     r = params["r"]
-    propensities = r*propensities
+    propensities = np.power(r, dt)*propensities
     x_ind, y_ind = index
 
     propensities[x_ind, y_ind] = 1
@@ -57,7 +57,6 @@ def update_propensities(propensities, index, params):
     near_neighbors = get_nearest_neighbors(propensities, (x_ind, y_ind))
     for neighbor in near_neighbors:
         propensities[neighbor[0], neighbor[1]] = 1
-
     return propensities
 
 def get_nonzero_propensities(propensities):
@@ -68,6 +67,21 @@ def get_nonzero_propensities(propensities):
     probability = nonzero_propensities/np.sum(nonzero_propensities)
 
     return index_flat, probability
+
+def choose_from_tau(taus):
+    x_ind, y_ind = np.unravel_index(np.argmin(taus), taus.shape)
+    tau = taus[x_ind, y_ind]
+    return (x_ind, y_ind), tau
+
+def add_point(index, space, max_height):
+    x_ind, y_ind = index
+    near_neighbors = get_nearest_neighbors(max_height, (x_ind, y_ind))
+    height_surrondings = [max_height[neighbor[0], neighbor[1]] for neighbor in near_neighbors]
+
+    highest_pos = max([max(height_surrondings), max_height[x_ind, y_ind]+1])
+    space[x_ind, y_ind, highest_pos] = 1
+    max_height[x_ind, y_ind] = highest_pos
+    return space, max_height
 
 def plot_surface(surface, show = True, title = "Ballistic Deposition", 
                  colorbar = False, save = False, name = None):
@@ -88,7 +102,7 @@ def plot_surface(surface, show = True, title = "Ballistic Deposition",
     if save:
         if len(name) == 0:
            raise ValueError("No Name for surface plot")
-        else: plt.savefig("./SimResults/"+name)
+        else: plt.savefig(name+".png")
         plt.close()
     # plt.show()
     if show:
