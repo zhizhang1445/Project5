@@ -164,3 +164,4 @@ cython_debug/
 **.png
 **.json
 **.npy
+**.h5ad
