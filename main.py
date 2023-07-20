@@ -14,7 +14,9 @@ def main(params):
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
     t = n_ptcls = n_snapshot = 0 
+
     max_height_time = []
+    times = []
 
     shape = tuple(width for _ in range(d))
     max_height_flat = np.zeros((np.power(width, d)), dtype=int) #occupation/height at each site
@@ -43,7 +45,8 @@ def main(params):
                     n_ptcls%params["n_ptcl_snapshot"] == 0
                     ):
                 max_height_time.append(deepcopy(max_height_flat))
-                
+                times.append(t)
+
                 n_snapshot += 1
             n_ptcls += 1
 
@@ -52,7 +55,7 @@ def main(params):
             break
     else:
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
-    return max_height_time
+    return max_height_time, times
 
 if __name__ == "__main__":
     params = {
@@ -60,17 +63,18 @@ if __name__ == "__main__":
     "dom":                  400,
     "ndim":                   1,
     "t_max":                100,
-    "r_0":                 0.01,
-    "tau":                    1,
+    "r_0":                    1,
+    "tau":                    4,
     "dt_snapshot":            1,          
-    "n_ptcl_snapshot":       10,
+    "n_ptcl_snapshot":    np.inf,
     "foldername":  "SimResults",
-    "filename":        "result2",
+    "filename":        "result",
     }
 
     max_height_time = main1D_w_plotting(params)
-    # adata = ad.AnnData(np.array(max_height_time).squeeze())
-
+    # max_height_time, times = main(params)
+    adata = ad.AnnData(np.array(max_height_time).squeeze())
+    # adata = ad.AnnData(obs={'observation_time': times})
     # adata.uns.update(params)
     # foldername = params["foldername"]
     # filename = params["filename"]
