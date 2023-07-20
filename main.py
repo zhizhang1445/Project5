@@ -35,7 +35,7 @@ def main(params):
             neighbors = get_nearest_non_diagonal_neighbors(index_chosen, shape)
             for index_ngbh in neighbors:
                 t_next[index_ngbh] = single_time(t_min, params)
-            t_next[index_chosen] = single_time
+            t_next[index_chosen] = single_time(t_min, params)
 
             t = t_min
 
