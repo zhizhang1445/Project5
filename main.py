@@ -2,14 +2,13 @@ import numpy as np
 import scipy
 import os
 import matplotlib.pyplot as plt
-import imageio
-import anndata as ad
 
 #This is the main file to run scripts, please only put finished 
 #code here so we don't create merge conflicts
 from methodsMemoryDeposition import *
 
 def main(params):
+    np.random.seed() 
     width = params["dom"]
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
@@ -71,9 +70,8 @@ if __name__ == "__main__":
     "filename":        "result",
     }
 
-    max_height_time = main1D_w_plotting(params)
+    max_height_time, _ = main(params)
     # max_height_time, times = main(params)
-    adata = ad.AnnData(np.array(max_height_time).squeeze())
     # adata = ad.AnnData(obs={'observation_time': times})
     # adata.uns.update(params)
     # foldername = params["foldername"]

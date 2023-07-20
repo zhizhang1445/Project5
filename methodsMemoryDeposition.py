@@ -2,7 +2,7 @@ import numpy as np
 import scipy
 import scipy.sparse as sparse
 import matplotlib.pyplot as plt
-import imageio
+# import imageio
 import os
 from copy import deepcopy
 
