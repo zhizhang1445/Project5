@@ -8,7 +8,7 @@ from copy import deepcopy
 
 #This is the main file to run scripts, please only put finished 
 #code here so we don't create merge conflicts
-from methodsBallisticDeposition import *
+from methodsMemoryDeposition import *
 
 def get_nearest_non_diagonal_neighbors(index_flat, shape):
     neighbors = []

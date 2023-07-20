@@ -7,113 +7,71 @@ import anndata as ad
 
 #This is the main file to run scripts, please only put finished 
 #code here so we don't create merge conflicts
-from methodsBallisticDeposition import *
+from methodsMemoryDeposition import *
 
 def main(params):
-    height = params["height"]
-    width = params["x_dom"]
-    length = params["y_dom"]
-    r = params["r"]
-    foldername = params["foldername"]
-    filename = params["filename"]
+    width = params["dom"]
+    d = params["ndim"]
+    params["max_CDF"] = max_CDF(params)
     t = n_ptcls = n_snapshot = 0 
-    space_time = []
-    propensities_time = []
+    max_height_time = []
 
-    space = np.zeros((width, length, height), dtype=int) #actual simulation space
-    max_height = np.zeros((width, length), dtype=int) #occupation/height at each site
-    propensities = np.ones((width, length), dtype = float) #probability of droping at each coordinate
-    taus = np.random.exponential(1/propensities) #purtiaty times generated from exponential distribution
+    shape = tuple(width for _ in range(d))
+    max_height_flat = np.zeros((np.power(width, d)), dtype=int) #occupation/height at each site
+    t_next = np.array([single_time(0, params) for _ in range(np.power(width, d))])
 
-    while(t<params["t_max"]):
+    while(t < params["t_max"]):
         try:
-            index_chosen, tau_min = choose_from_tau(taus)
-            t += tau_min
-            space, max_height = add_point(index_chosen, space, max_height)
-            propensities_new = update_propensities(propensities, index_chosen, params, dt = tau_min)
-
-            if params["all_resample"]:
-                with np.errstate(divide="ignore"):
-                    taus = np.random.exponential(1/propensities_new)
-                    taus[np.isnan(taus)] = np.inf
-            else:
-                with np.errstate(all='ignore'):
-                    taus = (np.divide(propensities, propensities_new)*(taus - tau_min))
-                    taus[np.isnan(taus)] = np.inf
-
-                taus[index_chosen[0], index_chosen[1]
-                ] = np.random.exponential(1/propensities_new[index_chosen[0], 
-                                                            index_chosen[1]])
-
-            propensities = propensities_new
+            index_chosen = np.argmin(t_next)
+            t_min = t_next[index_chosen]
+            max_height_flat = add_point_ndarray(index_chosen, max_height_flat, shape)
             
+            if t_min == np.inf:
+                print(f"EVERYONE IS DEAD AT: {t} | N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
+                break
+            
+            neighbors = get_nearest_non_diagonal_neighbors(index_chosen, shape)
+            for index_ngbh in neighbors:
+                t_next[index_ngbh] = single_time(t_min, params)
+            t_next[index_chosen] = single_time
+
+            t = t_min
+
             if (
                 t > n_snapshot*params["dt_snapshot"]
                 ) or (
                     n_ptcls%params["n_ptcl_snapshot"] == 0
                     ):
+                max_height_time.append(deepcopy(max_height_flat))
                 
-                propensities_time.append(propensities)
-                space_time.append(space)
-
-                if params["gif"]:
-                    surface = space[:, 0, :].transpose() if (params["y_dom"] == 1) else max_height
-
-                    plot_surface(surface,
-                                 title = f"r: {r} | time: {t}",  
-                                 save = params["gif"],
-                                 show = False,
-                                 name = f"./{foldername}/frame_{n_snapshot}")
                 n_snapshot += 1
             n_ptcls += 1
-
-        except IndexError:
-            if (np.max(max_height) == params["height"]-1):
-                print(f"Fully Occupied at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
-            else:
-                raise IndexError("This IndexError is NOT expected")
-            break
 
         except KeyboardInterrupt:
             print(f"Manually Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
             break
     else:
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
-
-    frames = []
-    n_updates = 0
-    while(params["gif"]):
-        try:
-            image = imageio.v2.imread(f'./{foldername}/frame_{n_updates}.png')
-            os.remove(f'./{foldername}/frame_{n_updates}.png')
-            frames.append(image)
-            n_updates += 1
-        except FileNotFoundError:
-            imageio.mimsave(f'./{foldername}/{filename}.gif', 
-                        frames, fps = 30)
-            break
-    return space_time
+    return max_height_time
 
 if __name__ == "__main__":
     params = {
     "height":               400,
-    "x_dom":                400,
-    "y_dom":                  1,
+    "dom":                  400,
+    "ndim":                   1,
     "t_max":                100,
-    "r":                    0.3,
+    "r_0":                 0.01,
+    "tau":                    1,
     "dt_snapshot":            1,          
-    "n_ptcl_snapshot":   np.inf,
-    "gif":                 True,
-    "all_resample":       False,
+    "n_ptcl_snapshot":       10,
     "foldername":  "SimResults",
     "filename":        "result2",
     }
 
-    space_time = main(params)
-    space_time = [space.flatten() for space in space_time if isinstance(space, np.ndarray) ]
-    adata = ad.AnnData(np.array(space_time).squeeze())
+    max_height_time = main1D_w_plotting(params)
+    # adata = ad.AnnData(np.array(max_height_time).squeeze())
 
-    adata.uns.update(params)
-    foldername = params["foldername"]
-    filename = params["filename"]
-    adata.write(f"./{foldername}/{filename}.h5ad")
+    # adata.uns.update(params)
+    # foldername = params["foldername"]
+    # filename = params["filename"]
+    # adata.write(f"./{foldername}/{filename}.h5ad")
