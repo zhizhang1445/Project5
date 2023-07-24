@@ -2,7 +2,7 @@ import numpy as np
 import scipy
 import scipy.sparse as sparse
 import matplotlib.pyplot as plt
-# import imageio
+import imageio
 import os
 from copy import deepcopy
 
@@ -86,13 +86,17 @@ def add_point(index, space, max_height):
     max_height[index] = highest_pos
     return space, max_height
 
-def plot_surface(surface, show = True, title = "Ballistic Deposition", 
+def plot_surface(surface, max_height=None, show = True, title = "Ballistic Deposition", 
                  colorbar = False, save = False, name = None):
-    fig = plt.figure()
+    plt.figure()
+
+    if (max_height is not None):
+        plt.plot(max_height)
     plt.imshow(surface, cmap='binary', origin='lower')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title(title)
+
     if colorbar:
         plt.colorbar()
     if save:
@@ -104,10 +108,13 @@ def plot_surface(surface, show = True, title = "Ballistic Deposition",
     if show:
         plt.show()
 
+
+
 def main1D_w_plotting(params):
     height = params["height"]
     width = params["dom"]
     d = 1
+    
     params["max_CDF"] = cutoff = max_CDF(params)
     t = n_ptcls = n_snapshot = 0 
     max_height_time = []
@@ -144,8 +151,8 @@ def main1D_w_plotting(params):
                     ):
                     max_height_time.append(max_height)
 
-                    plot_surface(space.transpose(),
-                                title = f"p: {cutoff} | time: {t}",  
+                    plot_surface(space.transpose(), max_height,
+                                title = f"p: {cutoff:.2f} | time: {t:.2f}",  
                                 save = True,
                                 show = False,
                                 name = f"./{foldername}/frame_{n_snapshot}")

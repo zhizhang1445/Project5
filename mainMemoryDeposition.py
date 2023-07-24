@@ -12,7 +12,7 @@ def main(params):
     width = params["dom"]
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
-    t = n_ptcls = n_snapshot = 0 
+    t = n_ptcls = n_snapshot = 0
 
     max_height_time = []
     times = []
@@ -47,7 +47,6 @@ def main(params):
                     ):
                 max_height_time.append(deepcopy(max_height_flat))
                 times.append(t)
-
                 n_snapshot += 1
             n_ptcls += 1
 
@@ -67,7 +66,7 @@ if __name__ == "__main__":
     "r_0":                    1,
     "tau":                    4,
     "dt_snapshot":            1,          
-    "n_ptcl_snapshot":    np.inf,
+    "n_ptcl_snapshot":   np.inf,
     "foldername":  "SimResults",
     "filename":        "result",
     }
