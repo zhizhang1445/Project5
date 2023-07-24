@@ -9,7 +9,7 @@ arg_list_3=(0.7 0.98 0.99 0.999 1)
 for arg1 in "${arg_list_1[@]}"; do
   for arg2 in "${arg_list_2[@]}"; do
     for arg3 in "${arg_list_3[@]}"; do
-      python3 ./Tommaso/simulation_Tommaso.py "$arg1" "$arg2" "$arg3"
+      python3 ../Tommaso/simulation_Tommaso.py "$arg3" "$arg1"  "$arg2"
     done
   done
 done
