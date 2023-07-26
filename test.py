@@ -43,7 +43,7 @@ def main():
                 num_cores = multiprocessing.cpu_count()  # Get the number of available CPU cores
 
                 with multiprocessing.Pool(processes=num_cores) as pool:
-                    results = pool.map(memoryDeposition, [params for _ in range(num_cores)])
+                    results = pool.map(memoryDeposition, [params for params in params_list])
     return 1
 
 if __name__ == "__main__":
