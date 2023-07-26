@@ -182,7 +182,7 @@ def main1D_w_plotting(params):
             frames.append(image)
             n_updates += 1
         except FileNotFoundError:
-            imageio.mimsave(f'./{foldername}/{filename}.gif', 
+            imageio.mimsave(f'./{foldername}/{filename}.mp4', 
                         frames, fps = 30)
             break
     return max_height_time

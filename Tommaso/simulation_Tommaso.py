@@ -12,7 +12,7 @@ params = {
     "height":            np.inf,
     "dom":                    L,
     "ndim":                   1,
-    "t_max":           10000000,
+    "t_max":               1000,
     "r_0":                  r_0,
     "tau":                    1,
     "dt_snapshot":            1,          

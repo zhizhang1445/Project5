@@ -49,8 +49,8 @@ def main(params):
                 ) or (
                     n_ptcls%params["n_ptcl_snapshot"] == 0
                     ):
-                max_height_time.append(deepcopy(max_height_flat))
-                times.append(t)
+                # max_height_time.append(deepcopy(max_height_flat))
+                # times.append(t)
                 print(t,n_ptcls,max_height_flat.mean(), max_height_flat.std(),sep=',',file=outfile)
 
                 n_snapshot += 1
