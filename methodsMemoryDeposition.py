@@ -116,6 +116,7 @@ def main1D_w_plotting(params):
     d = 1
     
     params["max_CDF"] = cutoff = max_CDF(params)
+    rho = params["r_0"]*params["tau"]
     t = n_ptcls = n_snapshot = 0 
     max_height_time = []
     foldername = params["foldername"]
@@ -152,7 +153,7 @@ def main1D_w_plotting(params):
                     max_height_time.append(max_height)
 
                     plot_surface(space.transpose(), max_height,
-                                title = f"p: {cutoff:.2f} | time: {t:.2f}",  
+                                title = r"$\rho = $" + f"{rho:.2f}  " +  r"$t = $" + f"{t:.0f}",
                                 save = True,
                                 show = False,
                                 name = f"./{foldername}/frame_{n_snapshot}")
@@ -182,7 +183,7 @@ def main1D_w_plotting(params):
             frames.append(image)
             n_updates += 1
         except FileNotFoundError:
-            imageio.mimsave(f'./{foldername}/{filename}.mp4', 
+            imageio.mimsave(f'./{foldername}/{filename}.gif', 
                         frames, fps = 30)
             break
     return max_height_time

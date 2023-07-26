@@ -9,62 +9,42 @@ from copy import deepcopy
 import numpy.ma as ma
 
 from methodsMemoryDeposition import *
-from mainMemoryDeposition import main as memoryDeposition
+from main_Tommaso import main as memoryDeposition
 
 def main():
     params = {
     "height":               400,
     "dom":                10000,
     "ndim":                   1,
-    "t_max":             100000,
+    "t_max":                100,
     "r_0":                    1,
     "tau":                  0.5,
     "dt_snapshot":        np.inf,       
-    "n_ptcl_snapshot":    np.inf,
+    "n_ptcl_snapshot":      400,
     "foldername":  "SimResults",
     "filename":        "result",
+    "seed":                  1,          
     }
 
     mean_exit_times = []
     std_exit_times = []
     taus = []
 
-    for i in np.arange(-1.5, 0.03, 0.01):
-        tau = (10**i)
-        params["tau"] = tau
-        taus.append(tau)
+    for tau in [2, 4, 8, 16, 32]:
+        for L in [200, 400, 800, 1600, 3200]:
+                params_list = []
+                for seed in range(32):
 
-        local_exit_time = []
-        num_cores = multiprocessing.cpu_count()  # Get the number of available CPU cores
+                    params["tau"] = tau
+                    params["L"] = L
+                    params["seed"] = seed
+                    params_list.append(deepcopy(params))
 
-        with multiprocessing.Pool(processes=num_cores) as pool:
-            results = pool.map(memoryDeposition, [params for _ in range(num_cores)])
+                num_cores = multiprocessing.cpu_count()  # Get the number of available CPU cores
 
-        for res in results:
-            _ , times = res
-            if len(times) > 1:
-                local_exit_time.append(times[-1])
-            else:
-                local_exit_time.append(0)
-
-        print(f"{tau} Done| Mean Exit Time {np.mean(local_exit_time)}")
-        mean_exit_times.append(np.mean(local_exit_time)) 
-        std_exit_times.append(np.std(local_exit_time))
-    return mean_exit_times, std_exit_times, taus
+                with multiprocessing.Pool(processes=num_cores) as pool:
+                    results = pool.map(memoryDeposition, [params for _ in range(num_cores)])
+    return 1
 
 if __name__ == "__main__":
-    mean_exit_times, std_exit_times, taus = main()
-    y_low = np.array(mean_exit_times) - np.array(std_exit_times)
-    y_high = np.array(mean_exit_times) + np.array(std_exit_times)
-    np.save("mean_exit_times.npy", mean_exit_times)
-    np.save("std_exit_times.npy", std_exit_times)
-    np.save("taus.npy", taus)
-
-    plt.plot(taus, mean_exit_times, label='Data')
-    plt.fill_between(taus, y_low, y_high, alpha=0.2, label='Error Area')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel(r"$\tau$ [1/s]")
-    plt.ylabel("Survival Time [s]")
-    plt.title(r"Survival time for $r_0 = 1$, $L = 10^4$")
-    plt.savefig("Survival Probability.png")
+    main()

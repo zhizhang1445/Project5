@@ -13,6 +13,7 @@ def main(params):
         np.random.seed(); params['seed'] = 0
     else:
         np.random.seed(params['seed'])
+        
     width = params["dom"]
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
