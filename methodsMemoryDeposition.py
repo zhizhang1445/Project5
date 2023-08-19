@@ -119,13 +119,21 @@ def main1D_w_plotting(params):
     rho = params["r_0"]*params["tau"]
     t = n_ptcls = n_snapshot = 0 
     max_height_time = []
+    times = []
+
     foldername = params["foldername"]
     filename = params["filename"]
 
     shape = tuple(width for _ in range(d))
     max_height = np.zeros((width), dtype=int) #occupation/height at each site
-    t_next = np.array([single_time(0, params) for _ in range(width)])
     space = np.zeros((width, height), dtype= int)
+
+    if params["init_cond"] == "homogenous":
+        t_next = np.array([single_time(0, params) for _ in range(np.power(width, d))])
+    elif params["init_cond"] == "single":
+        t_next = np.full(np.power(width, d), np.inf)
+        while(t_next[int(len(t_next)/2)] == np.inf):
+            t_next[int(len(t_next)/2)] = single_time(0, params)
 
     while(t<params["t_max"]):
         try:
@@ -151,6 +159,7 @@ def main1D_w_plotting(params):
                     n_ptcls%params["n_ptcl_snapshot"] == 0
                     ):
                     max_height_time.append(max_height)
+                    times.append(t)
 
                     plot_surface(space.transpose(), max_height,
                                 title = r"$\rho = $" + f"{rho:.2f}  " +  r"$t = $" + f"{t:.0f}",
@@ -186,4 +195,4 @@ def main1D_w_plotting(params):
             imageio.mimsave(f'./{foldername}/{filename}.gif', 
                         frames, fps = 30)
             break
-    return max_height_time
+    return max_height_time, times
