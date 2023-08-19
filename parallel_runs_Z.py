@@ -14,11 +14,11 @@ from main import main as memoryDeposition
 def main():
     params = {
     "init_cond":       "single",
-    "height":               400,
-    "dom":                  400,
+    "height":            np.inf,
+    "dom":                20000,
     "ndim":                   1,
-    "t_max":                 10,
-    "r_0":                    4,
+    "t_max":            10000000,
+    "r_0":                    1,
     "tau":                    1,
     "dt_snapshot":            1,          
     "n_ptcl_snapshot":    np.inf,
