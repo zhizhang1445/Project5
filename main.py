@@ -9,6 +9,8 @@ import anndata as ad
 from methodsMemoryDeposition import *
 
 def main(params):
+    foldername = params["foldername"]
+
     if params['seed'] is None:
         np.random.seed(); params['seed'] = 0
     else:
@@ -18,8 +20,6 @@ def main(params):
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
     t = n_ptcls = n_snapshot = 0
-    outfile = open('sim_%.2er0_%dL_%dseed.csv'%(params['r_0'], params['dom'],int(params['seed'])),'w')
-    print('t,N,h_mean,h_std',file=outfile)
 
     max_height_time = []
     times = []
@@ -36,6 +36,8 @@ def main(params):
             t_next[int(len(t_next)/2)] = single_time(0, params)
     else:
         raise NameError("Initialization type is wrong")
+    
+    write2json(foldername, params)
 
     while(t < params["t_max"]):
         try:
@@ -63,9 +65,8 @@ def main(params):
                 if params["keep_all"]:
                     max_height_time.append(deepcopy(max_height_flat))
                     times.append(t)
-
-                print(t,n_ptcls,max_height_flat.mean(), max_height_flat.std(),sep=',',file=outfile)
-
+                
+                np.save(foldername + f"/{int(t)}time_{n_ptcls}ptcls_snapshot{n_snapshot}.npy", max_height_flat)
                 n_snapshot += 1
             n_ptcls += 1
 

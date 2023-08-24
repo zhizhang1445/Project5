@@ -4,9 +4,14 @@ import scipy.sparse as sparse
 import matplotlib.pyplot as plt
 import imageio
 import os
+import json
 from copy import deepcopy
 
 #this is the main module with all the methods we need, updatesteps go there
+def write2json(foldername, params):
+    with open(foldername + '/params.json', 'w') as fp:
+        json.dump(params, fp)
+
 def quantile_Function(random_numbers, t_last, params):
     r_0 = params["r_0"]
     tau = params["tau"]
