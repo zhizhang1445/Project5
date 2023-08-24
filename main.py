@@ -37,7 +37,12 @@ def main(params):
     else:
         raise NameError("Initialization type is wrong")
     
-    write2json(foldername, params)
+    try:
+        write2json(foldername, params)
+    except FileNotFoundError:
+        print(foldername)
+        os.mkdir(foldername)
+        write2json(foldername, params)
 
     while(t < params["t_max"]):
         try:
