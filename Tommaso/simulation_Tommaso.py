@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.path.append('../')
-from main import main
+from main_Zhi import main
 
 
 r_0 = float(sys.argv[1])

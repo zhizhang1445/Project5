@@ -9,7 +9,7 @@ from copy import deepcopy
 import numpy.ma as ma
 
 from methodsMemoryDeposition import *
-from main import main as memoryDeposition
+from main_Zhi import main as memoryDeposition
 
 def main():
     BigFolder = "../SimResults"
