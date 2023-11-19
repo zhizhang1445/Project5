@@ -8,6 +8,31 @@ def write2json(foldername, params):
     with open(foldername + '/params.json', 'w') as fp:
         json.dump(params, fp)
 
+def calc_empty_zones(max_height, empty_zones, params):
+    return empty_zones
+
+def calc_corr_length(max_height, params):
+    ndim = len(params["ndim"])
+
+    if ndim > 1:
+        raise NotImplementedError
+
+    start = end = 0
+    for i,val in enumerate(max_height):
+        if val > 0:
+            if start == 0:
+                start = i
+            else:
+                start = i
+
+    parallel_length = end-start+1
+    transverse_length = np.max(max_height)
+
+    if transverse_length <= 0:
+        raise IndexError("Something Went Wrong with the h_range")
+    return transverse_length, parallel_length
+
+
 def quantile_Function(random_numbers, t_last, params):
     r_0 = params["r_0"]
     tau = params["tau"]
@@ -108,7 +133,5 @@ def plot_surface(surface, max_height=None, show = True, title = "Ballistic Depos
     # plt.show()
     if show:
         plt.show()
-
-
 
 

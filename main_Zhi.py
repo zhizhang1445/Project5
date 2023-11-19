@@ -10,6 +10,7 @@ from methodsMemoryDeposition import *
 def main(params):
     foldername = params["foldername"]
 
+
     if params['seed'] is None:
         np.random.seed(); params['seed'] = 0
     else:
@@ -18,13 +19,17 @@ def main(params):
     width = params["dom"]
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
+    csv_name = 'sim_%.2er0_%dL_%dseed.csv'%(params['r_0'], params['dom'],int(params['seed']))
     t = n_ptcls = n_snapshot = 0
+    with open(csv_name,'w') as file:
+        print('t, num_active_sites, N, h_mean, h_std, trans_len, paral_len',file=file)
 
     max_height_time = []
     times = []
 
     shape = tuple(width for _ in range(d))
     max_height_flat = np.zeros((np.power(width, d)), dtype=int) #occupation/height at each site
+    num_ptcl_flat = np.zeros((np.power(width, d)), dtype=int) #occupation/height at each site
     
     if params["init_cond"] == "homogenous":
         t_next = np.array([single_time(0, params) for _ in range(np.power(width, d))])
@@ -48,9 +53,15 @@ def main(params):
             index_chosen = np.argmin(t_next)
             t_min = t_next[index_chosen]
             max_height_flat = add_point_ndarray(index_chosen, max_height_flat, shape)
-            
+            num_ptcl_flat[index_chosen] += 1
+
             if t_min == np.inf:
                 print(f"EVERYONE IS DEAD AT: {t} | N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
+
+                trans_len, paral_len = calc_corr_length(max_height_flat, params)
+                num_active_sites = np.sum(~np.isinf(times))
+                with open(csv_name,'w') as outfile:
+                    print(t, num_active_sites, n_ptcls,max_height_flat.mean(), max_height_flat.std(),trans_len, paral_len, sep=',',file=outfile)
                 break
             
             neighbors = get_nearest_non_diagonal_neighbors(index_chosen, shape)
@@ -70,7 +81,12 @@ def main(params):
                     max_height_time.append(deepcopy(max_height_flat))
                     times.append(t)
                 
-                np.save(foldername + f"/{int(t)}time_{n_ptcls}ptcls_snapshot{n_snapshot}.npy", max_height_flat)
+                trans_len, paral_len = calc_corr_length(max_height_flat, params)
+                num_active_sites = np.sum(~np.isinf(times))
+                with open(csv_name,'w') as outfile:
+                    print(t, num_active_sites, n_ptcls,max_height_flat.mean(), max_height_flat.std(), trans_len, paral_len, sep=',',file=outfile)
+
+                # np.save(foldername + f"/{t%.2e}time_{n_ptcls}ptcls_snapshot{n_snapshot}.npy", max_height_flat)
                 n_snapshot += 1
             n_ptcls += 1
 

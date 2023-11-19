@@ -21,7 +21,7 @@ def main():
     "t_max":              10000,
     "r_0":                    1,
     "tau":                    1,
-    "dt_snapshot":            1,          
+    "dt_snapshot":           10,          
     "n_ptcl_snapshot":    np.inf,
     "keep_all":           False, 
     "foldername":       BigFolder,
@@ -37,8 +37,8 @@ def main():
 
     params_list = []
     i = 1
-    for r_0 in [0.1, 0.5, 0.7, 0.9, 0.99, 0.999, 0.9999, 1, 2, 4, 8, 16, 32]:
-        for L in [200, 400, 800, 1600, 3200]:
+    for r_0 in [0.1, 0.5, 0.7, 0.9, 0.99, 0.999, 0.9999, 1, 1.1]:
+        for L in [200, 400, 800]:
                 for seed in range(32):
                     temp_params = deepcopy(params)
                     temp_params["r_0"] = r_0
@@ -48,7 +48,7 @@ def main():
 
                     if r_0 > 1:
                         temp_params["t_max"] = 1000
-                        temp_params["n_ptcl_snapshot"]=400
+                        temp_params["n_ptcl_snapshot"]= 1000
                     params_list.append(temp_params)
                     i+=1
 
