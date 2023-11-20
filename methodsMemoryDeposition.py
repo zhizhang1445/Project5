@@ -8,47 +8,63 @@ def write2json(foldername, params):
     with open(foldername + '/params.json', 'w') as fp:
         json.dump(params, fp)
 
-def calc_empty_zones(space_flat, params):
-    def dfs(index): #Use Depth-First Search for entire fucking lattice
-        stack = [index]
-        
-        visited.add(index)
+def calc_empty_zones_temp(space_flat, params):
+    def dfs(start_index_double_flat, space_double_flat, visited): #Use Depth-First Search for entire fucking lattice
+        stack = [start_index_double_flat]
+        current_cluster = [start_idx]
+        visited.append(start_index_double_flat)
 
         while stack:
             current_index = stack.pop()
 
             for neighbor in get_NNDN_and_time(current_index, params):
-                if neighbor not in visited:
+                if neighbor not in visited and (space_double_flat[neighbor]==0):
                     stack.append(neighbor)
-                    visited.add(neighbor)
+                    visited.append(neighbor)
                     current_cluster.append(neighbor)
+        return current_cluster, visited
 
-    def get_NNDN_and_time(current_index, params):
-        shape = tuple(params["dom"] for _ in range(params["ndim"]))
+    def get_NNDN_and_time(current_index_double_flat, params): #Returns double flat index and also return itself
+        shape_prev_flat = (np.power(params['dom'], params["ndim"]), params["height"])
+        shape_space = tuple(params["dom"] for _ in range(params["ndim"]))
 
-        space_index_flat, time_index = current_index
-        neighbors_same_layer = get_nearest_non_diagonal_neighbors(space_index_flat, shape)
-        time_neighbor = [(space_index_flat, time_index)]
+        # print("Shape_prev_flat:", shape_prev_flat)
+        space_index_flat, time_index = np.unravel_index(current_index_double_flat, shape_prev_flat)
+
+        # print("Shape_space:", shape_space)
+        neighbors_same_layer = get_nearest_non_diagonal_neighbors(space_index_flat, shape_space)
+
+        double_flat_index = np.ravel_multi_index((space_index_flat, time_index), shape_prev_flat)
+        time_neighbors = [double_flat_index]
 
         for neighbor in neighbors_same_layer:
-            if not time_index-1 < 0:
-                time_neighbor.append((neighbor, time_index-1))
-            
-            time_neighbor.append((neighbor, time_index))
+            try:
+                if not time_index-1 < 0:
+                    double_flat_index = np.ravel_multi_index((neighbor, time_index-1), shape_prev_flat )
+                    time_neighbors.append(double_flat_index)
+                
+                double_flat_index = np.ravel_multi_index((neighbor, time_index), shape_prev_flat )
+                time_neighbors.append(double_flat_index)
 
-            if time_index < params["height"]:
-                time_neighbor.append((neighbor, time_index+1))
+                if not time_index+1 >= params["height"]: #This is so that the addition of one doesn't fuck me up
+                    double_flat_index = np.ravel_multi_index((neighbor, time_index+1), shape_prev_flat)
+                    time_neighbors.append(double_flat_index)
+            except ValueError:
+                print("DoubleFlatIndexError: |Space_index: ",neighbor,"TimeIndex: ", 
+                      time_index, "CastShape: " ,shape_prev_flat)
+        return time_neighbors
             
-
-    empty_indexes = np.where(space_flat==0)
+    space_double_flat = np.ravel(space_flat) #Double flat means flat in space and flat in time too
+    empty_double_flat_indexes = np.argwhere(space_double_flat==0) # find all double flat indexes in space time
 
     list_empty_clusters = []
-    visited= set()
+    visited= [] #global variable for tracking visited double flat indexes
 
-    for idx in empty_indexes:
-        if idx not in visited and space_flat[idx] == 0:
-            current_cluster = [idx]
-            dfs(idx)
+
+    for start_idx in empty_double_flat_indexes:
+        if start_idx not in visited:
+            
+            current_cluster, visited = dfs(start_idx, space_double_flat, visited)
             list_empty_clusters.append(current_cluster)
         
     return list_empty_clusters
