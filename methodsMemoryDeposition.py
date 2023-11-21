@@ -8,7 +8,7 @@ def write2json(foldername, params):
     with open(foldername + '/params.json', 'w') as fp:
         json.dump(params, fp)
 
-def calc_empty_zones_temp(space_flat, params):
+def calc_empty_clusters(space_flat, params):
     def dfs(start_index_double_flat, space_double_flat, visited): #Use Depth-First Search for entire fucking lattice
         stack = [start_index_double_flat]
         current_cluster = [start_idx]
@@ -66,15 +66,72 @@ def calc_empty_zones_temp(space_flat, params):
             
             current_cluster, visited = dfs(start_idx, space_double_flat, visited)
             list_empty_clusters.append(current_cluster)
-        
+
+        # ratio_done = np.size(visited)/np.size(empty_double_flat_indexes)
+        # print("Ratio of Index Clustered:  ", ratio_done*100, "%")
     return list_empty_clusters
 
-def calc_MVS_empty_clusters(list_empty_clusters, params):
-    if params["init_cond"]:
-        for cluster in list_empty_clusters:
-            if (0,0) in cluster:
-                list_empty_clusters.remove(cluster)
-    return list_empty_clusters
+def unflat_empty_clusters(list_empty_clusters, params):
+    list_cluster_single_flat = []
+    shape_prev_flat = (np.power(params["dom"], params["ndim"]), params["height"])
+
+    for cluster in list_empty_clusters:
+        simple_flag = False
+        if 0 in cluster and (params["init_cond"] == "single"):
+            continue
+        
+        cluster_single_flat = []
+        for coord_double_flat in cluster:
+            coord_single_flat = np.unravel_index(coord_double_flat, shape_prev_flat)
+
+            if coord_single_flat[1] == params["height"]-1: # Everything connected to last layer is removed
+                simple_flag = True
+                break #break out of the loop over coordinates
+            cluster_single_flat.append(coord_single_flat)
+    
+        if simple_flag: #Skips the appending, removes a cluster if flag is trigerred
+            continue
+        list_cluster_single_flat.append(cluster_single_flat)
+    return list_cluster_single_flat
+
+def calc_MVS_empty_clusters(list_clusters_double_flat, params):
+    shape_prev_flat = (np.power(params["dom"], params["ndim"]), params["height"])
+    Masses = []
+    Volumes = []
+    Sizes = []
+
+    for cluster in list_clusters_double_flat:
+        simple_flag = False
+        if 0 in cluster and (params["init_cond"] == "single"):
+            continue
+            
+
+        cluster_single_flat = []
+        cluster_times = []
+        cluster_volumes = np.zeros(params["height"])
+
+        for coord_double_flat in cluster:
+            coord_single_flat = np.unravel_index(coord_double_flat, shape_prev_flat)
+            height_index = coord_single_flat[1]
+
+            if coord_single_flat[1] == params["height"]-1: # Everything connected to last layer is removed
+                simple_flag = True
+                break #break out of the loop over coordinates
+
+            cluster_volumes[height_index] += 1
+            cluster_times.append(height_index)
+        
+        if simple_flag: #Skips the appending, removes a cluster if flag is trigerred
+            continue
+
+        Masses.append(len(cluster)) #These do not happen if the flag is on. 
+        Volumes.append(np.mean(cluster_volumes[np.nonzero(cluster_volumes)]))
+        Sizes.append(np.max(cluster_times)-np.min(cluster_times))
+        
+    mass = np.mean(Masses)
+    volume = np.mean(Volumes)
+    size = np.mean(Sizes)
+    return mass, volume, size
 
 def calc_corr_length(max_height, params):
     def calc_paral_len_1D(max_height):
