@@ -12,9 +12,9 @@ from methodsMemoryDeposition import *
 from main_Zhi import main as memoryDeposition
 
 def main():
-    params = {
-    "init_cond":       "single",
-    "height":             10000,
+    params = { #Simulation Parameters
+    "init_cond":       "single", #Set to "single" for single starting point percolation ""
+    "height":              1000,
     "dom":                20000,
     "ndim":                   1,
     "t_max":              10000,
@@ -37,7 +37,7 @@ def main():
 
     params_list = []
     i = 1
-    for r_0 in [0.1, 0.5, 0.7, 0.9, 0.99, 0.999, 0.9999, 1, 1.01, 1.1, 2, 4, 8]:
+    for r_0 in [0.1, 0.5, 0.7, 0.9, 0.99, 0.999, 0.9999, 1, 1.001, 1.01, 1.1]:
         for L in [200, 400, 800]:
                 for seed in range(32):
                     temp_params = deepcopy(params)

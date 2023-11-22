@@ -1,6 +1,7 @@
 import numpy as np
 import scipy
 import os
+import time
 import matplotlib.pyplot as plt
 
 #This is the main file to run scripts, please only put finished 
@@ -71,23 +72,31 @@ def main(params):
             if params["Whole_Lattice"]:
                 space_flat[index_chosen, highest_pos] += 1 #This adds for the vertical lattice, however this one is very memory intensive so be careful
 
-            if t_min == np.inf or (params["Whole_Lattice"] and highest_pos+1 == params["height"]-1): #We have a double exit condition
+            if t_min == np.inf or (params["Whole_Lattice"] and highest_pos+1 == params["height"]-1): #This is the Death/Lattice full exit condituion
                 #Either everything is dead: t =inf or the lattice is completely filled (we don't allow infinite verticality to prevent memory leaks)
                 print(f"EVERYONE IS DEAD AT: {t} | N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
 
                 trans_len, paral_len = calc_corr_length(max_height_flat, params) #This computes the transverse and parallel correlation lengths
                 num_active_sites = np.sum(~np.isinf(t_next)) #This computes the number of active sites by looking at how many finite times there still exists
 
-                with open(csv_name,'a') as outfile:
-                    if not params["Whole_Lattice"]:
+                
+                if not params["Whole_Lattice"]:
+                    with open(csv_name,'a') as outfile:
                         print(t, num_active_sites, n_ptcls+1,max_height_flat.mean(), max_height_flat.std(),trans_len, paral_len, sep=',', file = outfile)
 
-                    else:
-                        density, global_max_height_prev = calculate_density(space_flat, global_max_height_prev, max_height_flat)
+                else:
+                    density, global_max_height_prev = calculate_density(space_flat, global_max_height_prev, max_height_flat)
 
+                    t0 = time.time()
+                    list_empty_clusters = calc_empty_clusters(space_flat, params)
+                    tf = time.time()
+                    print("Total time used to compute the empty clusters:   ", tf-t0)
+
+                    mass, volume, size = calc_MVS_empty_clusters(list_empty_clusters, params)
+
+                    with open(csv_name,'a') as outfile:
                         print(t, num_active_sites, n_ptcls+1,max_height_flat.mean(), max_height_flat.std(),
-                              trans_len, paral_len, density, sep=',', file=outfile) #TODO Compute Empty Cluster Mean Mass, Volume and Size
-                break
+                              trans_len, paral_len, density, mass, volume, size, sep=',', file=outfile)
             
             #Update the Times
             neighbors = get_nearest_non_diagonal_neighbors(index_chosen, shape)
@@ -96,6 +105,7 @@ def main(params):
             t_next[index_chosen] = single_time(t_min, params)
             t = t_min
 
+            #What follows runs at each snapshot
             if (
                 t > n_snapshot*params["dt_snapshot"]
                 ) or (
@@ -118,7 +128,7 @@ def main(params):
                         density, global_max_height_prev = calculate_density(space_flat, global_max_height_prev, max_height_flat)
 
                         print(t, num_active_sites, n_ptcls+1,max_height_flat.mean(), max_height_flat.std(),
-                              trans_len, paral_len, density, sep=',', file=outfile) #TODO Compute Empty Cluster Mean Mass, Volume and Size
+                              trans_len, paral_len, density, 0, 0, 0, sep=',', file=outfile) #TODO Compute Empty Cluster Mean Mass, Volume and Size
 
                 n_snapshot += 1 #The numberof snapshots is used to print at given intervals
             n_ptcls += 1 #The number of pctls is not that useful when keep whole lattice
@@ -131,21 +141,21 @@ def main(params):
     return 1
 
 if __name__ == "__main__":
-    params = {
-    "init_cond":      "single",
-    "height":               100,
-    "dom":                  100,
-    "ndim":                   1,
-    "t_max":                100,
-    "r_0":                    4,
-    "tau":                    1,
-    "dt_snapshot":            1,          
-    "n_ptcl_snapshot":  np.infty,
-    "keep_all":           False, 
-    "foldername":   "SimResults/",
-    "filename":     "TestSingle",
-    "seed":                None,
-    "Whole_Lattice":       True,
+    params = {#Simulation Parameters
+    "init_cond":      "single", #Set to "single" for single starting point percolation ""
+    "height":               100, #Max height to simulation, can be set to np.infty if Whole_Lattice is set to False
+    "dom":                  100, #Space domain in a single dimension axis, total space is dom^ndim
+    "ndim":                   1, #Number of dimension in space
+    "t_max":                100, #Total simulation time before forced exit (exit by death is also possible)
+    "r_0":                    4, #This is the initial rate for deposition
+    "tau":                    1, #Decay time for deposition rate
+    "dt_snapshot":            1, #minimun time interval between snapshots (printout to data)
+    "n_ptcl_snapshot":  np.infty, #Number of deposition betwenn snapshots
+    "keep_all":           False,  #Keep all returns the maxheight, time array instead of 1 for the main function
+    "foldername":   "SimResults/", #Folder to print out the results (either a csv or a bunch of npy and json parameter file)
+    "filename":     "TestSingle", #I don't think this is used actually
+    "seed":                None, #Random simulation seed
+    "Whole_Lattice":       True, #Keeps the whole lattice in memory, very expensive but needed to compute density and empty cluster statistics
     }
 
     main(params)

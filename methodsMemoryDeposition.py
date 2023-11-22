@@ -105,8 +105,6 @@ def calc_MVS_empty_clusters(list_clusters_double_flat, params):
         if 0 in cluster and (params["init_cond"] == "single"):
             continue
             
-
-        cluster_single_flat = []
         cluster_times = []
         cluster_volumes = np.zeros(params["height"])
 
@@ -127,7 +125,7 @@ def calc_MVS_empty_clusters(list_clusters_double_flat, params):
         Masses.append(len(cluster)) #These do not happen if the flag is on. 
         Volumes.append(np.mean(cluster_volumes[np.nonzero(cluster_volumes)]))
         Sizes.append(np.max(cluster_times)-np.min(cluster_times))
-        
+
     mass = np.mean(Masses)
     volume = np.mean(Volumes)
     size = np.mean(Sizes)
