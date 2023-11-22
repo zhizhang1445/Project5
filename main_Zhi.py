@@ -138,6 +138,9 @@ def main(params):
             break
     else: #Never Should reach this
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
+
+    if params["keep_all"]:
+        return max_height_time, times
     return 1
 
 if __name__ == "__main__":
