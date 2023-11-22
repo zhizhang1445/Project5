@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import random
 from copy import deepcopy
 
 #this is the main module with all the methods we need, updatesteps go there
@@ -8,23 +9,45 @@ def write2json(foldername, params):
     with open(foldername + '/params.json', 'w') as fp:
         json.dump(params, fp)
 
-def calc_empty_clusters(space_flat, params):
-    def dfs(start_index_double_flat, space_double_flat, visited): #Use Depth-First Search for entire fucking lattice
-        stack = [start_index_double_flat]
-        current_cluster = [start_idx]
-        visited.append(start_index_double_flat)
+def calc_empty_clusters_temp(space_flat, max_height_flat, params, num_samples = np.inf):
+    def dfs(start_index_double_flat): #Use Depth-First Search for entire fucking lattice
+        empty_space_flag = False
+
+        stack = [start_index_double_flat] #Using a stack to do DFS (dynamic)
+        current_cluster = [start_index_double_flat] #Current cluster stack (accumulating)
+        # print(len(space_double_flat_left))
 
         while stack:
             current_index = stack.pop()
 
             for neighbor in get_NNDN_and_time(current_index, params):
-                if neighbor not in visited and (space_double_flat[neighbor]==0):
+                if neighbor in space_double_flat_left: #space_double_flat_left checks if visited too
                     stack.append(neighbor)
-                    visited.append(neighbor)
+                    space_double_flat_left.remove(neighbor)
+                    # print(len(space_double_flat_left))
                     current_cluster.append(neighbor)
-        return current_cluster, visited
 
-    def get_NNDN_and_time(current_index_double_flat, params): #Returns double flat index and also return itself
+                if neighbor in known_empty_space: #Remove shit if it's neighbors is outside max height
+                    empty_space_flag = True
+                    
+        return current_cluster, empty_space_flag
+    
+    def get_nonzero_below_MaxHeight(space_flat, max_height_flat): #This is to get all nonzero elements and things above max height
+        space_double_flat_left = []
+        known_empty_space = []
+        shape_prev_flat = (np.power(params['dom'], params["ndim"]), params["height"])
+        for x, (space_slice, max_h_for_slice) in enumerate(zip(space_flat, max_height_flat)): #I genuinely don't know if there's anything faster than this as this takes ~n*T
+            for h, pt in enumerate(space_slice):
+                if pt == 0:
+                    flat_index = np.ravel_multi_index([x, h], shape_prev_flat)
+
+                    if h <= max_h_for_slice:
+                        space_double_flat_left.append(flat_index)
+                    elif h> max_h_for_slice :
+                        known_empty_space.append(flat_index)
+        return space_double_flat_left, known_empty_space
+
+    def get_NNDN_and_time(current_index_double_flat, params): #Returns double flat index of nearest non diagonal neighbors and also return itself
         shape_prev_flat = (np.power(params['dom'], params["ndim"]), params["height"])
         shape_space = tuple(params["dom"] for _ in range(params["ndim"]))
 
@@ -54,30 +77,38 @@ def calc_empty_clusters(space_flat, params):
                       time_index, "CastShape: " ,shape_prev_flat)
         return time_neighbors
             
-    space_double_flat = np.ravel(space_flat) #Double flat means flat in space and flat in time too
-    empty_double_flat_indexes = np.argwhere(space_double_flat==0) # find all double flat indexes in space time
-
+    space_double_flat_left, known_empty_space = get_nonzero_below_MaxHeight(space_flat, max_height_flat) # find all double flat indexes in space time
     list_empty_clusters = []
-    visited= [] #global variable for tracking visited double flat indexes
 
-
-    for start_idx in empty_double_flat_indexes:
-        if start_idx not in visited:
-            
-            current_cluster, visited = dfs(start_idx, space_double_flat, visited)
+    while space_double_flat_left:
+        rand_idx = random.randrange(len(space_double_flat_left)) #Taking a random index to start is actually much better for random small samples
+        start_idx = space_double_flat_left.pop(rand_idx)
+        
+        current_cluster, empty_space_flag = dfs(start_idx)
+        if not empty_space_flag:
             list_empty_clusters.append(current_cluster)
+        
+        if len(list_empty_clusters) >= num_samples: #You can decide to just sample 4 clusters and call it a day lmao
+            print(f"Reached {num_samples} clusters, now stopping for conserving compute")
+            break
 
-        # ratio_done = np.size(visited)/np.size(empty_double_flat_indexes)
-        # print("Ratio of Index Clustered:  ", ratio_done*100, "%")
     return list_empty_clusters
 
-def unflat_empty_clusters(list_empty_clusters, params):
+def unflat_empty_clusters(list_empty_clusters, params): # this function is to unflatten the double flatten space but also to remove clusters with known space
     list_cluster_single_flat = []
     shape_prev_flat = (np.power(params["dom"], params["ndim"]), params["height"])
 
     for cluster in list_empty_clusters:
         simple_flag = False
-        if 0 in cluster and (params["init_cond"] == "single"):
+
+        if params["init_cond"] == "single":
+            for i in range(params["ndim"]):
+                idx = np.ravel_multi_index((i*params["dom"], 0), shape_prev_flat)
+                if idx in cluster:
+                    simple_flag = True
+                    break
+        
+        if simple_flag:
             continue
         
         cluster_single_flat = []
@@ -103,8 +134,7 @@ def calc_MVS_empty_clusters(list_clusters_double_flat, params):
     for cluster in list_clusters_double_flat:
         simple_flag = False
         if 0 in cluster and (params["init_cond"] == "single"):
-            continue
-            
+            continue 
 
         cluster_single_flat = []
         cluster_times = []
