@@ -9,7 +9,7 @@ def write2json(foldername, params):
     with open(foldername + '/params.json', 'w') as fp:
         json.dump(params, fp)
 
-def calc_empty_clusters_temp(space_flat, max_height_flat, params, num_samples = np.inf):
+def calc_empty_clusters(space_flat, max_height_flat, params, num_samples = np.inf):
     def dfs(start_index_double_flat): #Use Depth-First Search for entire fucking lattice
         empty_space_flag = False
 

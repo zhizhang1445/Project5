@@ -69,7 +69,7 @@ def main(params):
             t_min = t_next[index_chosen]
             max_height_flat, highest_pos = add_point_ndarray(index_chosen, max_height_flat, shape) #This add_point is only adding for a flat(no time) lattice
 
-            if params["Whole_Lattice"]:
+            if params["Whole_Lattice"] and highest_pos+1 <= params["height"]-1:
                 space_flat[index_chosen, highest_pos] += 1 #This adds for the vertical lattice, however this one is very memory intensive so be careful
 
             if t_min == np.inf or (params["Whole_Lattice"] and highest_pos+1 == params["height"]-1): #This is the Death/Lattice full exit condituion
@@ -86,17 +86,13 @@ def main(params):
 
                 else:
                     density, global_max_height_prev = calculate_density(space_flat, global_max_height_prev, max_height_flat)
-
-                    t0 = time.time()
-                    list_empty_clusters = calc_empty_clusters(space_flat, params)
-                    tf = time.time()
-                    print("Total time used to compute the empty clusters:   ", tf-t0)
-
+                    list_empty_clusters = calc_empty_clusters(space_flat, max_height_flat, params)
                     mass, volume, size = calc_MVS_empty_clusters(list_empty_clusters, params)
 
                     with open(csv_name,'a') as outfile:
                         print(t, num_active_sites, n_ptcls+1,max_height_flat.mean(), max_height_flat.std(),
                               trans_len, paral_len, density, mass, volume, size, sep=',', file=outfile)
+                break
             
             #Update the Times
             neighbors = get_nearest_non_diagonal_neighbors(index_chosen, shape)
@@ -145,7 +141,7 @@ def main(params):
 
 if __name__ == "__main__":
     params = {#Simulation Parameters
-    "init_cond":      "single", #Set to "single" for single starting point percolation ""
+    "init_cond":      "single", #Set to "single" for single starting point percolation "homogenous" for whole lattice starting point
     "height":               100, #Max height to simulation, can be set to np.infty if Whole_Lattice is set to False
     "dom":                  100, #Space domain in a single dimension axis, total space is dom^ndim
     "ndim":                   1, #Number of dimension in space
