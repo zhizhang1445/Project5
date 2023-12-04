@@ -20,7 +20,7 @@ def main():
     "t_max":              10000,
     "r_0":                    1,
     "tau":                    1,
-    "dt_snapshot":            10,          
+    "dt_snapshot":           10,          
     "n_ptcl_snapshot":  np.Infinity,
     "keep_all":           False, 
     "foldername":     "../SimResults/",
@@ -38,12 +38,12 @@ def main():
     params_list = []
     i = 1
     for r_0 in [0.1, 0.5, 0.7, 0.9, 0.99, 0.999, 0.9999, 1, 1.001, 1.01, 1.1]:
-        for L in [200, 400, 800]:
+        for dom in [200, 400, 800]:
                 for seed in range(32):
                     temp_params = deepcopy(params)
                     temp_params["r_0"] = r_0
                     temp_params["dt_snapshot"] = 10*r_0
-                    temp_params["L"] = L
+                    temp_params["dom"] = dom
                     temp_params["seed"] = seed
                     temp_params["foldername"] = "../SimResults/"
 
