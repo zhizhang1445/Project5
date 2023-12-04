@@ -24,9 +24,9 @@ def main(params):
 
     with open(csv_name,'w') as outfile:
         if params["Whole_Lattice"]:
-            print('t, num_active_sites, N, h_mean, h_std, trans_len, paral_len,',
-                  'density_last_interval, empty_bond_mass, empty_bond_volume, mean_bond_size',file=outfile)
-        else: print('t, num_active_sites, N, h_mean, h_std, trans_len, paral_len',file=outfile)
+            print('t,num_active_sites,N,h_mean,h_std,trans_len,paral_len,',
+                  'density_last_interval,empty_bond_mass,empty_bond_volume,mean_bond_size',file=outfile)
+        else: print('t,num_active_sites,N,h_mean,h_std,trans_len,paral_len',file=outfile)
 
 
     shape = tuple(width for _ in range(d)) #Shape is the tuple with the dimension sizes
