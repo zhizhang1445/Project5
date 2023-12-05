@@ -19,7 +19,7 @@ def main(params):
     width = params["dom"]
     d = params["ndim"]
     params["max_CDF"] = max_CDF(params)
-    csv_name = foldername + 'sim_%.2er0_%dL_%dseed.csv'%(params['r_0'], params['dom'],int(params['seed']))
+    csv_name = foldername + 'sim_%.5er0_%dL_%dseed.csv'%(params['r_0'], params['dom'],int(params['seed']))
     t = n_ptcls = n_snapshot = 0
 
     with open(csv_name,'w') as outfile:
@@ -135,25 +135,29 @@ def main(params):
     else: #Never Should reach this
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
 
+    if params["keep_all"] and params["Whole_Lattice"]:
+        return space_flat, times
+
     if params["keep_all"]:
         return max_height_time, times
+    
     return 1
 
 if __name__ == "__main__":
     params = {#Simulation Parameters
     "init_cond":      "single", #Set to "single" for single starting point percolation "homogenous" for whole lattice starting point
-    "height":               100, #Max height to simulation, can be set to np.infty if Whole_Lattice is set to False
-    "dom":                  100, #Space domain in a single dimension axis, total space is dom^ndim
+    "height":              1000, #Max height to simulation, can be set to np.infty if Whole_Lattice is set to False
+    "dom":                  200, #Space domain in a single dimension axis, total space is dom^ndim
     "ndim":                   1, #Number of dimension in space
-    "t_max":                100, #Total simulation time before forced exit (exit by death is also possible)
-    "r_0":                    4, #This is the initial rate for deposition
+    "t_max":              10000, #Total simulation time before forced exit (exit by death is also possible)
+    "r_0":                  0.5, #This is the initial rate for deposition
     "tau":                    1, #Decay time for deposition rate
-    "dt_snapshot":            1, #minimun time interval between snapshots (printout to data)
+    "dt_snapshot":           10, #minimun time interval between snapshots (printout to data)
     "n_ptcl_snapshot":  np.infty, #Number of deposition betwenn snapshots
     "keep_all":           False,  #Keep all returns the maxheight, time array instead of 1 for the main function
     "foldername":   "SimResults/", #Folder to print out the results (either a csv or a bunch of npy and json parameter file)
     "filename":     "TestSingle", #I don't think this is used actually
-    "seed":                None, #Random simulation seed
+    "seed":                 1, #Random simulation seed
     "Whole_Lattice":       True, #Keeps the whole lattice in memory, very expensive but needed to compute density and empty cluster statistics
     }
 

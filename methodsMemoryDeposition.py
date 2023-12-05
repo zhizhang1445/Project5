@@ -126,6 +126,8 @@ def unflat_empty_clusters(list_empty_clusters, params): # this function is to un
     return list_cluster_single_flat
 
 def calc_MVS_empty_clusters(list_clusters_double_flat, params):
+    if len(list_clusters_double_flat) == 0:
+        return 0, 0, 0
     shape_prev_flat = (np.power(params["dom"], params["ndim"]), params["height"])
     Masses = []
     Volumes = []
@@ -157,10 +159,14 @@ def calc_MVS_empty_clusters(list_clusters_double_flat, params):
         Masses.append(len(cluster)) #These do not happen if the flag is on. 
         Volumes.append(np.mean(cluster_volumes[np.nonzero(cluster_volumes)]))
         Sizes.append(np.max(cluster_times)-np.min(cluster_times))
-
-    mass = np.mean(Masses)
-    volume = np.mean(Volumes)
-    size = np.mean(Sizes)
+    try:
+        mass = np.mean(Masses)
+        volume = np.mean(Volumes)
+        size = np.mean(Sizes)
+    except RuntimeWarning:
+        mass = 0
+        volume = 0
+        size = 0
     return mass, volume, size
 
 def calc_corr_length(max_height, params):
