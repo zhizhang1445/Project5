@@ -196,8 +196,6 @@ def calc_corr_length(max_height, params):
     else:
         parallel_length = calc_paral_len_1D(max_height)
 
-    if parallel_length == params["dom"]-1:
-        parallel_length = np.NaN
     transverse_length = np.max(max_height)
 
     if transverse_length <= 0:
