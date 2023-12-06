@@ -166,3 +166,4 @@ cython_debug/
 **.npy
 **.h5ad
 **.csv
+**/SimResults**
