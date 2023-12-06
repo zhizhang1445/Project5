@@ -170,35 +170,35 @@ def calc_MVS_empty_clusters(list_clusters_double_flat, params):
     return mass, volume, size
 
 def calc_corr_length(max_height, params):
-    def calc_paral_len_1D(max_height):
+    def calc_trans_len_1D(array):
         start = end = 0
-        for i,val in enumerate(max_height):
+        for i,val in enumerate(array):
             if val > 0:
                 if start == 0:
                     start = i
 
                 end = i
 
-        parallel_length = end-start+1
-        return parallel_length
+        trans_length = end-start+1
+        return trans_length
     
     ndim = params["ndim"]
 
     if ndim > 1:
-        parallel_lengths_by_axis = []
+        trans_lengths_by_axis = []
 
         for axis in range(ndim):
             slice_max_height = max_height[axis*params["dom"]:(axis+1)*params["dom"]]
-            parallel_lengths_by_axis.append(calc_paral_len_1D(slice_max_height))
+            transverse_lengths_by_axis.append(calc_trans_len_1D(slice_max_height))
 
-        parallel_length = max(parallel_lengths_by_axis)
+        transverse_length = max(transverse_lengths_by_axis)
 
     else:
-        parallel_length = calc_paral_len_1D(max_height)
+        transverse_length = calc_paral_len_1D(max_height)
 
-    transverse_length = np.max(max_height)
+    parallel_length = np.max(max_height)
 
-    if transverse_length <= 0:
+    if parallel_length <= 0:
         raise IndexError("Something Went Wrong with the h_range")
     return transverse_length, parallel_length
 
