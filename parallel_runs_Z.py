@@ -13,6 +13,7 @@ from main_Zhi import main as memoryDeposition
 
 def main():
     params = { #Simulation Parameters
+    "time_dist_type": "continuous",
     "init_cond":       "single", #Set to "single" for single starting point percolation "homogenous" for full lattice start
     "height":              1000,
     "dom":                20000,
@@ -23,7 +24,7 @@ def main():
     "dt_snapshot":           10,          
     "n_ptcl_snapshot":  np.Infinity,
     "keep_all":           False, 
-    "foldername":     "../SimResults_Singles/",
+    "foldername":     "../SimResults_Continuous/",
     "filename":        "result",
     "seed":                  1, 
     "Whole_Lattice":      True,         
@@ -45,7 +46,7 @@ def main():
 
     params_list = []
     i = 1
-    for r_0 in [0.1, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 1, 1.001, 1.0001, 1.01, 1.05, 1.1, 1.3, 1.5, 1.7, 2]:
+    for r_0 in [0.1, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 1, 1.001, 1.0001, 1.01, 1.05, 1.1, 1.3, 1.5, 1.7, 2, 2.25, 2.5, 3]:
         for dom in [200, 400, 800, 1600]:
                 init_random_seed = np.random.randint(0, 1000, 1)
                 for seed in range(32):
@@ -58,7 +59,7 @@ def main():
 
                     if r_0 >= 1:
                         temp_params["t_max"] = 1000
-                        temp_params["n_ptcl_snapshot"]= 1000
+                        temp_params["n_ptcl_snapshot"] = 2*dom
                     params_list.append(temp_params)
                     i+=1
                 with open("runtime_stats.txt",'a') as outfile:

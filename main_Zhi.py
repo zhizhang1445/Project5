@@ -136,7 +136,7 @@ def main(params):
         print(f"Stopped at time: {t}| N_Ptcls: {n_ptcls}| N_snapshots: {n_snapshot}")
 
     if params["keep_all"] and params["Whole_Lattice"]:
-        return space_flat, times
+        return space_flat, list_empty_clusters, times
 
     if params["keep_all"]:
         return max_height_time, times
@@ -145,6 +145,7 @@ def main(params):
 
 if __name__ == "__main__":
     params = {#Simulation Parameters
+    "time_dist_type": "continuous", #Set to either discrete or continuous time
     "init_cond":      "single", #Set to "single" for single starting point percolation "homogenous" for whole lattice starting point
     "height":              1000, #Max height to simulation, can be set to np.infty if Whole_Lattice is set to False
     "dom":                  200, #Space domain in a single dimension axis, total space is dom^ndim

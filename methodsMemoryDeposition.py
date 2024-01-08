@@ -189,12 +189,12 @@ def calc_corr_length(max_height, params):
 
         for axis in range(ndim):
             slice_max_height = max_height[axis*params["dom"]:(axis+1)*params["dom"]]
-            transverse_lengths_by_axis.append(calc_trans_len_1D(slice_max_height))
+            trans_lengths_by_axis.append(calc_trans_len_1D(slice_max_height))
 
-        transverse_length = max(transverse_lengths_by_axis)
+        transverse_length = max(trans_lengths_by_axis)
 
     else:
-        transverse_length = calc_paral_len_1D(max_height)
+        transverse_length = calc_trans_len_1D(max_height)
 
     parallel_length = np.max(max_height)
 
@@ -228,7 +228,12 @@ def single_time(t_last, params):
     if random_number >= cutoff:
         return np.inf
     else:
-        time = quantile_Function(random_number, t_last, params)
+        if params["time_dist_type"] == "continuous":
+            time = quantile_Function(random_number, t_last, params)
+        elif params["time_dist_type"] == "discrete":
+            time = t_last +1
+        else:
+            raise KeyError("time_dist_type key does not work")
     return time
 
 def get_nearest_non_diagonal_neighbors(index_flat, shape):
